@@ -1,0 +1,4 @@
+name: dwc_library
+dependencies:
+  web_components:
+    git: git://github.com/dart-lang/dart-web-components.git
