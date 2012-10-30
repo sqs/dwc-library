@@ -1,0 +1,102 @@
+<!--
+Canvas drawing technique adapted from:
+  http://benpickles.github.com/peity/jquery.peity.js
+-->
+<!DOCTYPE html>
+<html>
+<body>
+<element name="x-sparkline" extends="div" constructor="SparklineComponent"
+         apply-author-styles="">
+  <template>
+    <style scoped>
+    </style>
+
+    <div class="sparkline"></div>
+
+  </template>
+<script type="application/dart">
+import 'dart:html';
+import 'package:web_components/web_component.dart';
+
+class SparklineComponent extends WebComponent {
+  List<num> values;
+  num width = 200;
+  num height = 35;
+  num strokeWidth = 2;
+  String fillStyle = '#c6d9fd';
+  String strokeStyle = '#4d89f9';
+    String abc;
+
+  CanvasElement _canvas;
+
+  void created() {
+    _canvas = new Element.tag('canvas');
+    _canvas.width = this.width;
+    _canvas.height = this.height;
+
+    var minVal = _min(values);
+    var maxVal = _max(values);
+    var xQuotient = _canvas.width / (values.length - 1);
+    var yQuotient = _canvas.height / (maxVal - minVal);
+    
+    CanvasRenderingContext2D ctx = _canvas.context2d;
+    ctx.beginPath();
+    ctx.moveTo(0, height + (minVal * yQuotient));
+
+    List<Map<String, num>> coords = [];
+    for (num i = 0; i < values.length; i++) {
+      num x = i * xQuotient;
+      num y = height - (yQuotient * (values[i] - minVal));
+      coords.add(new Coord(x, y));
+      ctx.lineTo(x, y);
+    }
+
+    ctx.lineTo(width, height + (minVal * yQuotient));
+    ctx.fillStyle = fillStyle;
+    ctx.fill();
+
+    if (strokeWidth != null && strokeWidth > 0) {
+      ctx.beginPath();
+      ctx.moveTo(0, coords[0].y);
+      for (num i = 0; i < coords.length; i++) {
+        ctx.lineTo(coords[i].x, coords[i].y);
+      }
+      ctx.lineWidth = strokeWidth;
+      ctx.strokeStyle = strokeStyle;
+      ctx.stroke();
+    }
+
+    _root.query('div.sparkline').nodes.add(_canvas);
+  }
+
+  num _min(List<num> values) {
+    num minVal;
+    for (num v in values) {
+      if (minVal == null || v < minVal) {
+        minVal = v;
+      }
+    }
+    return minVal;
+  }
+
+  num _max(List<num> values) {
+    num maxVal;
+    for (num v in values) {
+      if (maxVal == null || v > maxVal) {
+        maxVal = v;
+      }
+    }
+    return maxVal;
+  }
+}
+
+class Coord {
+  final num x;
+  final num y;
+  Coord(this.x, this.y);
+}
+</script>
+</element>
+</body>
+</html>
+
